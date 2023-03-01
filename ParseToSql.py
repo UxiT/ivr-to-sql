@@ -1,15 +1,13 @@
-import json
 import pandas as pd
 
 from Configuraion import Configuration
 
 
 class ParseToSql:
-    def __init__(self, config: Configuration, headerKey: str) -> None:
+    def __init__(self, config: Configuration) -> None:
         self.dfs = []
         self.uniqueValues = []
         self.cfg = config
-        self.headerKey = headerKey
 
         self.fillDfs()
 
@@ -25,7 +23,7 @@ class ParseToSql:
         for i in range(len(self.dfs)):
             offerValues = []
 
-            for value in self.dfs[i][self.headerKey]:
+            for value in self.dfs[i][self.cfg.getHeader()]:
                 offerValues.append(value)
 
                 if value not in self.uniqueValues:
@@ -45,7 +43,7 @@ class ParseToSql:
     def makeRuleSqlFile(self, baseString, values, ruleId, fileName):
         strValues = self.parseArrayWithDoubleQuotes(values)
 
-        ruleSql = baseString + '\'{"values":'+strValues+'", question:1"}\'' + ' where id='+str(ruleId)+";"
+        ruleSql = baseString + '\'{"values":'+strValues+', "question":1}\'' + ' where bundle_offer_rule_id='+str(ruleId)+";"
         file = open('./output/{}.sql'.format(fileName), 'w')
         file.write(ruleSql)
         file.close()
