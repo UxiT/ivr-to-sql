@@ -12,6 +12,13 @@ class Configuration:
         self.__sqlForAster = os.getenv('SQL_FOR_ASTER')
         self.__ivr = os.getenv('IVR')
         self.__header = os.getenv('HEADER')
+        print(os.getenv('NAMES_EXTRA'))
+
+        if(os.getenv('NAMES_EXTRA')):
+            self.namesExtra = list(os.getenv('NAMES_EXTRA').split(', '))
+            self.ruleIdsExtra = list(os.getenv('RULE_IDS_EXTRA').split(', '))
+        else:
+            self.namesExtra = None
     
     def getNames(self) -> list:
         return self.__names
