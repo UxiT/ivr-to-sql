@@ -23,7 +23,11 @@ class ParseToSql:
         self.addExtra(self.cfg.getIVR())
 
     def fillValues(self):
-        for i in range(len(self.dfs)):
+
+        total = len(self.dfs)
+        self.__printProgressBar(0, total, prefix = 'Progress:', suffix = 'Complete', length = 50)
+
+        for i in range(total):
             offerValues = []
 
             for value in self.dfs[i][self.cfg.getHeader()]:
@@ -39,8 +43,11 @@ class ParseToSql:
                 self.cfg.getNames()[i]
             )
 
+            self.__printProgressBar(i+1, total, prefix = 'Progress:', suffix = 'Complete', length = 50)
+
     def fillDfs(self):
         print("[1] Reading source files...")
+        
         for name in self.cfg.getNames():
             self.dfs.append(pd.read_csv(
                 "./source/{0}.csv".format(name), dtype=str))
@@ -109,3 +116,13 @@ class ParseToSql:
         file = open("./output/aster_extra.sql", "w")
         file.write(baseString)
         file.close()
+
+
+    def __printProgressBar (self, iteration, total, prefix = '', suffix = '', decimals = 1, length = 80, fill = '█', printEnd = "\r"):
+        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+        filledLength = int(length * iteration // total)
+        bar = fill * filledLength + '-' * (length - filledLength)
+        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+        # Print New Line on Complete
+        if iteration == total: 
+            print()
