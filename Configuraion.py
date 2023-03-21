@@ -12,7 +12,7 @@ class Configuration:
         self.__sqlForAster = os.getenv('SQL_FOR_ASTER')
         self.__ivr = os.getenv('IVR')
         self.__header = os.getenv('HEADER')
-        print(os.getenv('NAMES_EXTRA'))
+        self.__remove = list(os.getenv('REMOVE').split(', '))
 
         if(os.getenv('NAMES_EXTRA')):
             self.namesExtra = list(os.getenv('NAMES_EXTRA').split(', '))
@@ -37,3 +37,6 @@ class Configuration:
     
     def getHeader(self):
         return self.__header
+    
+    def getRemove(self):
+        return self.__remove

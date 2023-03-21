@@ -20,7 +20,8 @@ class ParseToSql:
             self.cfg.getIVR()
         )
 
-        self.addExtra(self.cfg.getIVR())
+        # self.addExtra(self.cfg.getIVR())
+        # self.substractUnused()
 
     def fillValues(self):
 
@@ -117,6 +118,38 @@ class ParseToSql:
         file.write(baseString)
         file.close()
 
+    def substractUnused(self):
+        print("[4] Finding values to remove...")
+        removeCnt = len(self.cfg.getRemove())
+        self.__printProgressBar(0, removeCnt, prefix = 'Progress:', suffix = 'Complete', length = 50)
+
+        values = []
+        sql = "delete from ivr_values where value in ("
+
+        first = True
+        for i in range(removeCnt):
+            df = pd.read_csv("./source/{0}.csv".format(self.cfg.getRemove()[i]), dtype=str)
+
+            for value in df['Zips'].tolist():
+                
+
+                if value not in self.uniqueValues and value not in values:
+                    values.append(value)
+
+                    if first:
+                        first = False
+                        sql += "'{0}'".format(value)
+                    else:
+                        sql += ", '{0}'".format(value)
+
+            self.__printProgressBar(i+1, removeCnt, prefix = 'Progress:', suffix = 'Complete', length = 50)
+
+        sql += ") and ivr = {0};".format(self.cfg.getIVR())
+
+        file = open("./output/remove.sql", "w")
+        file.write(sql)
+        file.close()
+        
 
     def __printProgressBar (self, iteration, total, prefix = '', suffix = '', decimals = 1, length = 80, fill = '█', printEnd = "\r"):
         percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
