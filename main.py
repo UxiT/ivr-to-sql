@@ -4,5 +4,8 @@ from ParseToSql import ParseToSql
 parseToSql = ParseToSql(Configuration())
 
 if __name__ == '__main__':
-    parseToSql.run()
-    print("Done!")
+    try:
+        parseToSql.run()
+        print("Done!")  
+    except Exception as e:
+        print(e);
