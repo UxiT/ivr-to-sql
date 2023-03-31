@@ -21,7 +21,7 @@ class ParseToSql:
         )
 
         self.addExtra(self.cfg.ivr)
-        self.substractUnused()
+        # self.substractUnused()
 
     def fillValues(self):
 
@@ -31,14 +31,18 @@ class ParseToSql:
         for i in range(total):
             offerValues = []
 
-            for value in self.dfs[i][self.cfg.header]:
-                if len(value) < 5:
-                    value = "0"*(5-len(value)) + value
+            for column in self.dfs[i].columns.values:
+                for value in self.dfs[i][column]:
+                    if value == '' or type(value) == float:
+                        continue
 
-                offerValues.append(value)
+                    if len(value) < 5:
+                        value = "0"*(5-len(value)) + value
 
-                if value not in self.uniqueValues:
-                    self.uniqueValues.append(value)
+                    offerValues.append(value)
+
+                    if value not in self.uniqueValues:
+                        self.uniqueValues.append(value)
 
             self.makeRuleSqlFile(
                 self.cfg.sqlForRule,
