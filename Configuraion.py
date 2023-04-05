@@ -11,8 +11,6 @@ class Configuration:
         self.sqlForRule = os.getenv('SQL_FOR_RULE')
         self.sqlForAster = os.getenv('SQL_FOR_ASTER')
         self.ivr = os.getenv('IVR')
-        self.header = os.getenv('HEADER')
-        self.remove = list(os.getenv('REMOVE').split(', '))
         self.bundle = os.getenv('BUNDLE')
 
         if(os.getenv('NAMES_EXTRA')):
