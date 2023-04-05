@@ -20,8 +20,11 @@ class ParseToSql:
             self.cfg.ivr
         )
 
-        self.addExtra(self.cfg.ivr)
-        self.substractUnused()
+        if(self.cfg.namesExtra[0] != ''):
+            self.addExtra(self.cfg.ivr)
+
+        if(self.cfg.remove[0] != ''):
+            self.substractUnused()
 
     def fillValues(self):
 
