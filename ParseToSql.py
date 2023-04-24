@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 from Configuraion import Configuration
 
@@ -8,8 +9,10 @@ class ParseToSql:
         self.dfs = []
         self.uniqueValues = []
         self.cfg = config
+        self.active_names = []
 
         self.fillDfs()
+
 
     def run(self):
         self.fillValues()
@@ -20,13 +23,19 @@ class ParseToSql:
             self.cfg.ivr
         )
 
-        if(self.cfg.namesExtra[0] != ''):
-            self.addExtra(self.cfg.ivr)
-
-        if(self.cfg.remove[0] != ''):
-            self.substractUnused()
         self.addExtra(self.cfg.ivr)
         self.substractUnused()
+
+    def fillDfs(self):
+        print("[1] Reading source files...")
+        
+        for filename in os.listdir(self.cfg.dir):
+            path = os.path.join(self.cfg.dir, filename)
+
+            if os.path.isfile(path):
+                self.dfs.append(pd.read_csv(path, dtype=str))
+                self.active_names.append(filename)
+
 
     def fillValues(self):
 
@@ -50,29 +59,21 @@ class ParseToSql:
                         self.uniqueValues.append(value)
 
             self.makeRuleSqlFile(
-                self.cfg.sqlForRule,
                 offerValues,
-                self.cfg.ruleIds[i],
-                self.cfg.names[i]
+                self.active_names[i]
             )
 
             self.__printProgressBar(i+1, total, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
-    def fillDfs(self):
-        print("[1] Reading source files...")
-        
-        for name in self.cfg.names:
-            self.dfs.append(pd.read_csv(
-                "./source/{0}/{1}.csv".format(self.cfg.bundle, name), dtype=str))
 
-    def makeRuleSqlFile(self, baseString, values, ruleId, fileName):
+    def makeRuleSqlFile(self, values, fileName):
         strValues = self.parseArrayWithDoubleQuotes(values)
 
-        ruleSql = baseString + '\'{"values":'+strValues+', "question":1}\'' + \
-            ' where bundle_offer_rule_id='+str(ruleId)+";"
+        ruleSql = '\'{"values":'+strValues+', "question":1}\''
         file = open('./output/{0}/{1}.sql'.format(self.cfg.bundle ,fileName), 'w')
         file.write(ruleSql)
         file.close()
+
 
     def parseArrayWithDoubleQuotes(self, values: list) -> str:
         string = ''
@@ -85,6 +86,7 @@ class ParseToSql:
                 string += ', "{0}"'.format(value)
 
         return "["+string+"]"
+    
 
     def makeAsterSqlFile(self, baseString, values, ivr):
         first = True
@@ -102,11 +104,10 @@ class ParseToSql:
         file.write(baseString)
         file.close()
 
+
     def addExtra(self, ivr):
         print("[3] Checking for extra values...")
-        df = pd.read_csv("./source/{}/value.csv".format(self.cfg.bundle), dtype=str)
-
-        data = df['Zips'].values.tolist()
+        data = pd.read_csv("./source/{}/value.csv".format(self.cfg.bundle), dtype=str)['Zips'].values.tolist()
         extraValues = []
 
         for value in self.uniqueValues:
@@ -130,21 +131,21 @@ class ParseToSql:
         file.write(baseString)
         file.close()
 
+
     def substractUnused(self):
         print("[4] Finding values to remove...")
-        removeCnt = len(self.cfg.remove)
-        self.__printProgressBar(0, removeCnt, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
         values = []
         sql = "delete from ivr_values where value in ("
 
         first = True
-        for i in range(removeCnt):
-            df = pd.read_csv("./source/{0}/{1}.csv".format(self.cfg.bundle ,self.cfg.remove[i]), dtype=str)
 
-            for value in df['Zips'].tolist():
-                
+        for filename in os.listdir(self.cfg.remove_dir):
+            path = os.path.join(self.cfg.remove_dir, filename)
 
+            data = pd.read_csv(path, dtype=str)['Zips'].tolist()
+
+            for value in data:
                 if value not in self.uniqueValues and value not in values:
                     values.append(value)
 
@@ -153,8 +154,6 @@ class ParseToSql:
                         sql += "'{0}'".format(value)
                     else:
                         sql += ", '{0}'".format(value)
-
-            self.__printProgressBar(i+1, removeCnt, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
         print("Values to remove count: {}".format(len(values)))
         sql += ") and ivr = {0};".format(self.cfg.ivr)
